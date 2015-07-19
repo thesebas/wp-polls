@@ -483,7 +483,7 @@ function display_pollvote($poll_id, $display_loading = true) {
 			$poll_answer_id = intval($poll_answer->polla_aid);
 			$poll_answer_text = stripslashes($poll_answer->polla_answers);
 			$poll_answer_votes = intval($poll_answer->polla_votes);
-			$poll_answer_percentage = round((($poll_answer_votes/$poll_question_totalvoters)*100));
+			$poll_answer_percentage = $poll_question_totalvoters > 0 ? round((($poll_answer_votes/$poll_question_totalvoters)*100)) : 0;
 			$template_answer = stripslashes(get_option('poll_template_votebody'));
 
 			$template_answer = apply_filters('poll_template_votebody_markup', $template_answer, $poll_answer, array(
@@ -559,8 +559,7 @@ function display_pollresult($poll_id, $user_voted = '', $display_loading = true)
 	$poll_question = $wpdb->get_row("SELECT pollq_id, pollq_question, pollq_totalvotes, pollq_active, pollq_timestamp, pollq_expiry, pollq_multiple, pollq_totalvoters FROM $wpdb->pollsq WHERE pollq_id = $poll_id LIMIT 1");
 	// No poll could be loaded from the database
 	if (!$poll_question) {
-		echo stripslashes(get_option('poll_template_disable'));
-		return;
+		return stripslashes(get_option('poll_template_disable'));
 	}
 	// Poll Question Variables
 	$poll_question_text = stripslashes($poll_question->pollq_question);
@@ -1536,9 +1535,9 @@ function polls_page_general_stats($content) {
 ### Class: WP-Polls Widget
  class WP_Widget_Polls extends WP_Widget {
 	// Constructor
-	function WP_Widget_Polls() {
+	function __construct() {
 		$widget_ops = array('description' => __('WP-Polls polls', 'wp-polls'));
-		$this->WP_Widget('polls-widget', __('Polls', 'wp-polls'), $widget_ops);
+		parent::__construct('polls-widget', __('Polls', 'wp-polls'), $widget_ops);
 	}
 
 	// Display Widget
